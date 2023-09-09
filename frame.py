@@ -44,7 +44,7 @@ def import_and_restart():
 
     # Run the git pull command
     try:
-        os.chdir("D:\\Raspberry pi\\")
+        os.chdir("/home/admin/Desktop/frame_picture")
         subprocess.check_call(["git", "pull", "https://github.com/ishanaframe/frame_picture.git"])
     except subprocess.CalledProcessError as e:
         print(f"Error during git pull: {e}")

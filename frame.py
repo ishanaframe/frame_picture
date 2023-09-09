@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import glob
 import random
@@ -10,7 +8,6 @@ import pygame
 from pygame.locals import QUIT, FULLSCREEN, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from PIL import Image, ImageTk
 import subprocess
-import sys
 import socket
 
 # Define global variables for double-click handling and slideshow status
@@ -19,42 +16,28 @@ click_count = 0
 slideshow_active = False
 root = None
 
-def get_media_files(folder_path):
-    supported_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.mp4', '.avi', '.mkv']
-    media_files = []
-    for ext in supported_extensions:
-        media_files.extend(glob.glob(os.path.join(folder_path, f'*{ext}')))
-    return media_files
-
-def is_connected():
-    """Check if there's an internet connection."""
+def has_internet():
     try:
-        # Connect to the host -- tells us if the host is actually reachable
         socket.create_connection(("1.1.1.1", 53))
         return True
     except OSError:
         pass
     return False
 
-def import_and_restart():
-    # Check internet connection
-    if not is_connected():
+def import_files():
+    if not has_internet():
         messagebox.showerror("Error", "No internet connection found")
         return
 
-    # Run the git pull command
-    try:
-        os.chdir("/home/admin/Desktop/frame_picture")
-        subprocess.check_call(["git", "pull", "https://github.com/ishanaframe/frame_picture.git"])
-    except subprocess.CalledProcessError as e:
-        print(f"Error during git pull: {e}")
-        return
+    os.system("cd /home/admin/Desktop/frame_picture\ && git pull https://github.com/ishanaframe/frame_picture.git")
+    os.execv(__file__, sys.argv)  # Restart the script
 
-    # Restart the application
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
-
-
+def get_media_files(folder_path):
+    supported_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.mp4', '.avi', '.mkv']
+    media_files = []
+    for ext in supported_extensions:
+        media_files.extend(glob.glob(os.path.join(folder_path, f'*{ext}')))
+    return media_files
 
 def main(folder_path):
     global slideshow_active
@@ -81,9 +64,6 @@ def main(folder_path):
 
     random.shuffle(media_files)
     current_index = 0
-
-    #exit_button = ttk.Button(root, text="Exit", command=exit_application, style="Rounded.TButton")
-    #exit_button.place(relx=0.95, rely=0.95, anchor="se")
 
     global last_click_time, click_count
 
@@ -155,7 +135,6 @@ def hide_loading():
     if loading_label:
         loading_label.destroy() 
 
-
 def delayed_start_slideshow(folder_path):
     hide_loading()
     main(folder_path)
@@ -165,8 +144,6 @@ def delayed_start_slideshow(folder_path):
 def create_slideshow(folder_path):
     show_loading()  # Show the loading GIF
     root.after(500, lambda: delayed_start_slideshow(folder_path))  # Delay the start of the slideshow by 500ms
-
-
 
 def close_slideshow():
     pygame.quit()
@@ -181,6 +158,7 @@ def update_avatar():
     random_avatar = random.choice(avatar_files)
     
     image = Image.open(random_avatar)
+    image = image.resize((int(root.winfo_screenwidth() * 0.45), int(root.winfo_screenheight() * 0.85)))  # Adjusted size for 5-inch display
     avatar_image = ImageTk.PhotoImage(image)
     
     avatar_label.config(image=avatar_image)
@@ -198,7 +176,7 @@ def create_homescreen(current_folder=None):
 
         global avatar_label
         avatar_label = tk.Label(root, bg="#E2D1F9")
-        avatar_label.place(relx=0.25, rely=0.5, anchor="center", relwidth=0.45, relheight=0.9)  # Adjusted size for offset
+        avatar_label.place(relx=0.25, rely=0.5, anchor="center", relwidth=0.45, relheight=0.85)  # Adjusted size for 5-inch display
 
     update_avatar()
 
@@ -213,28 +191,18 @@ def create_homescreen(current_folder=None):
         button.grid(row=idx, column=0, padx=10, pady=10, sticky="w")
 
     s = ttk.Style()
-    s.configure("Custom.TButton", padding=10, relief="raised", borderwidth=4, font=("Helvetica", 16), background="#317773", foreground="black")
+    s.configure("Custom.TButton", padding=10, relief="raised", borderwidth=4, font=("Helvetica", 16), background="#F5F5F5", foreground="black")
 
     # Destroy the previous exit button if it exists
     if exit_button:
         exit_button.destroy()
 
     exit_button = ttk.Button(root, text="Exit", command=root.destroy, style="Custom.TButton")  # Directly destroy the root without confirmation
-    exit_button.place(relx=0.95, rely=0.95, anchor="se")
+    exit_button.place(relx=0.95, rely=0.9, anchor="se")
 
-    # Create and place the "Import" button next to the "Exit" button
-    import_button = ttk.Button(root, text="Import", command=import_and_restart, style="Custom.TButton")
-    import_button.place(relx=0.82, rely=0.95, anchor="se")  # Adjusted the relx value for spacing
-
+    import_button = ttk.Button(root, text="Import", command=import_files, style="Custom.TButton")
+    import_button.place(relx=0.95, rely=0.8, anchor="se")
 
     root.mainloop()
-
-
-def exit_application():
-    result = messagebox.askquestion("Exit Application", "Are you sure you want to exit?")
-    if result == 'yes':
-        if slideshow_active:
-            pygame.quit()
-        root.destroy()
 
 create_homescreen()

@@ -32,7 +32,7 @@ def import_files():
         messagebox.showerror("Error", "No internet connection found")
         return
 
-    os.system("cd /home/admin/Desktop/frame_picture\ && git pull https://github.com/ishanaframe/frame_picture.git")
+    os.system("cd Desktop/frame_picture\ && git pull https://github.com/ishanaframe/frame_picture.git")
     os.execv(__file__, sys.argv)  # Restart the script
 
 def get_media_files(folder_path):

@@ -8,6 +8,7 @@ import pygame
 from pygame.locals import QUIT, FULLSCREEN, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from PIL import Image, ImageTk
 import subprocess
+import sys
 import socket
 
 # Define global variables for double-click handling and slideshow status
